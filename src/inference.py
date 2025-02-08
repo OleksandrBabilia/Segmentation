@@ -11,10 +11,13 @@ from tqdm import tqdm
 from dataset import OxfordIIITPetsFactory, TrimapClasses
 from utils.loss import IoUMetric
 from models.segnet import SegNet 
+from models.segnetdws import DWSSegNet
 
 def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_name):
     if model_name == "SegNet":
         model = SegNet(kernel_size=3).to(device)
+    elif model_name == "DWSSegNet":
+        model = DWSSegNet(kernel_size=3).to(device)
     else:
         print(f"Wrong model name: {model_name}")
         return
@@ -99,7 +102,7 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_nam
         plt.savefig(f"results/{model_name}.png")
 
 if __name__ == "__main__":
-    MODEL_NAME = "SegNet"
+    MODEL_NAME = "DWSSegNet"
     MODEL_PATH = f"./saved_models/{MODEL_NAME}.pth"
     DATA_PATH = "../data/OxfordPets"
     BATCH_SIZE = 21

@@ -16,8 +16,20 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
 
 ### List of Models and Hyperparameters:
 1. **SegNet** - [Paper](https://arxiv.org/abs/1511.00561v3)  
+   - **Size**: 15,274,892 parameters
    - **Loss**: 0.4629  
    - **Accuracy**:  
      - Pixel Accuracy: 0.8277  
      - IoU: 0.6460  
      - Custom IoU: 1.6417  
+   - **Note**:
+   The model I decided to start with is very simple but beautiful.
+2. **SegNet with Depthwise Separable Convolutions** - [Paper](https://arxiv.org/abs/1704.04861)  
+   - **Size**: 1,749,671 parameters
+   - **Loss**: 0.4899
+   - **Accuracy**:  
+     - Pixel Accuracy: 0.7960
+     - IoU: 0.6883
+     - Custom IoU: 1.4965 
+  - **Note**:
+  After modifying SegNet to use Depthwise Separable Convolutions, I was able to reduce the size by ~88%, with a 4% increase in loss

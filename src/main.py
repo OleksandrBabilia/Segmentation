@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
 from models.segnet import SegNet 
+from segmentation.src.models.segnetdws import DWSSegNet
 from dataset import OxfordIIITPetsFactory
 
 
@@ -14,7 +15,7 @@ if __name__ == "__main__":
     BATCH_SIZE = 32 
     EPOCHS = 20
     DATA_PATH = "../data/OxfordPets"
-    MODEL_NAME = "SegNet"
+    MODEL_NAME = "DWSSegNet"
     MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}.pth"
 
     device = (
@@ -34,6 +35,8 @@ if __name__ == "__main__":
 
     if MODEL_NAME == "SegNet":
         model = SegNet(kernel_size=3).to(device)
+    elif MODEL_NAME == "DWSSegNet":
+        model = DWSSegNet(kernel_size=3).to(device)
     else:
         print(f"Wrong model name: {MODEL_NAME}")
         exit(0)
