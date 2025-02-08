@@ -10,10 +10,15 @@ from tqdm import tqdm
 
 from dataset import OxfordIIITPetsFactory, TrimapClasses
 from utils.loss import IoUMetric
-from segnet.segnet import SegNet 
+from models.segnet import SegNet 
 
-def print_test_dataset_masks(model_pth, batch_size, show_plot, device):
-    model = SegNet(kernel_size=3).to(device)
+def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_name):
+    if model_name == "SegNet":
+        model = SegNet(kernel_size=3).to(device)
+    else:
+        print(f"Wrong model name: {model_name}")
+        return
+        
     model.load_state_dict(torch.load(model_pth, map_location=torch.device(device)))
     model.eval()
     criterion = nn.CrossEntropyLoss(reduction='mean')
@@ -61,8 +66,8 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device):
         pixel_accuracy = test_pixel_accuracy_running / (idx + 1)
         iou_accuracy = test_iou_accuracy_running / (idx + 1)
         custom_iou = test_custom_iou_running / (idx + 1)    
-
-    title = f'Loss: {test_loss:.4f} Accuracy[Pixel: {pixel_accuracy:.4f}, IoU: {iou_accuracy:.4f}, Custom IoU: {custom_iou:.4f}]'
+    parameters_count = sum(p.numel() for p in model.parameters()) 
+    title = f'{model_name} - {parameters_count} parameters\nLoss: {test_loss:.4f} Accuracy[Pixel: {pixel_accuracy:.4f}, IoU: {iou_accuracy:.4f}, Custom IoU: {custom_iou:.4f}]'
 
     while len(plt.get_fignums()) > 0:
         plt.close()
@@ -91,10 +96,11 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device):
         while len(plt.get_fignums()) > 0:
             plt.close()
     else:
-        plt.savefig("results/SegNet.png")
+        plt.savefig(f"results/{model_name}.png")
 
 if __name__ == "__main__":
-    MODEL_PATH = "./models/segnet.pth"
+    MODEL_NAME = "SegNet"
+    MODEL_PATH = f"./saved_models/{MODEL_NAME}.pth"
     DATA_PATH = "../data/OxfordPets"
     BATCH_SIZE = 21
     device = (
@@ -103,4 +109,4 @@ if __name__ == "__main__":
         "cpu"
     )
 
-    print_test_dataset_masks(MODEL_PATH, BATCH_SIZE, True, device)
+    print_test_dataset_masks(MODEL_PATH, BATCH_SIZE, True, device, MODEL_NAME)

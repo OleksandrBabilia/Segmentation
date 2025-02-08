@@ -3,7 +3,7 @@ from torch import optim, nn
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
-from segnet.segnet import SegNet 
+from models.segnet import SegNet 
 from dataset import OxfordIIITPetsFactory
 
 
@@ -14,7 +14,8 @@ if __name__ == "__main__":
     BATCH_SIZE = 32 
     EPOCHS = 20
     DATA_PATH = "../data/OxfordPets"
-    MODEL_SAVE_PATH = "./models/segnet.pth"
+    MODEL_NAME = "SegNet"
+    MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}.pth"
 
     device = (
         "cuda" if torch.cuda.is_available() else
@@ -31,7 +32,11 @@ if __name__ == "__main__":
                                 batch_size=BATCH_SIZE,
                                 shuffle=True)
 
-    model = SegNet(kernel_size=3).to(device)
+    if MODEL_NAME == "SegNet":
+        model = SegNet(kernel_size=3).to(device)
+    else:
+        print(f"Wrong model name: {MODEL_NAME}")
+        exit(0)
 
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     schedular = optim.lr_scheduler.StepLR(optimizer, step_size=SCHEDULAR_SZIE, gamma=SCHEDULAR_SZIE)

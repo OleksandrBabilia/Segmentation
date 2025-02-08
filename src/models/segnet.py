@@ -1,5 +1,5 @@
 from torch import nn 
-from segnet.parts import DoubleConv2d, DoubleUnConv2d, TripleConv2d, TripleUnConv2d
+from models.parts import DoubleConv2d, DoubleUnConv2d, TripleConv2d, TripleUnConv2d
 
 class SegNet(nn.Module):
     def __init__(self, kernel_size):

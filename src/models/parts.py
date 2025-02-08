@@ -1,6 +1,5 @@
 from torch import nn
 
-
 class BlockConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False):
