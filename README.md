@@ -33,3 +33,11 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
      - Custom IoU: 1.4965 
   - **Note**:
   After modifying SegNet to use Depthwise Separable Convolutions, I was able to reduce the size by ~88%, with a 4% increase in loss
+3. **VGG for Segmentation** - [Paper](https://arxiv.org/abs/1409.1556v6)  
+   - **Size**: 113,356,131 parameters
+   - **Loss**: 0.6833
+   - **Accuracy**:  
+     - Pixel Accuracy: 0.7327
+     - IoU: 0.5505
+  - **Note**:
+  I really think I've messed up here somewhere, because VGG should be better, but I don't error now. Will return to VGG.

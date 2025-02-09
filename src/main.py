@@ -3,9 +3,11 @@ from torch import optim, nn
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
-from models.segnet import SegNet 
-from segmentation.src.models.segnetdws import DWSSegNet
 from dataset import OxfordIIITPetsFactory
+from utils.plotbuilder import NeuralNetDebugger
+from models.segnet import SegNet 
+from models.segnetdws import DWSSegNet
+from models.vggnet import VGGNet 
 
 
 if __name__ == "__main__":
@@ -15,7 +17,7 @@ if __name__ == "__main__":
     BATCH_SIZE = 32 
     EPOCHS = 20
     DATA_PATH = "../data/OxfordPets"
-    MODEL_NAME = "DWSSegNet"
+    MODEL_NAME = "VGGNet"
     MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}.pth"
 
     device = (
@@ -37,6 +39,8 @@ if __name__ == "__main__":
         model = SegNet(kernel_size=3).to(device)
     elif MODEL_NAME == "DWSSegNet":
         model = DWSSegNet(kernel_size=3).to(device)
+    elif MODEL_NAME == "VGGNet":
+        model = VGGNet().to(device)
     else:
         print(f"Wrong model name: {MODEL_NAME}")
         exit(0)
@@ -44,6 +48,8 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     schedular = optim.lr_scheduler.StepLR(optimizer, step_size=SCHEDULAR_SZIE, gamma=SCHEDULAR_SZIE)
     criterion = nn.CrossEntropyLoss(reduction='mean')
+    debugger = NeuralNetDebugger(model)
+    train_losses, val_losses = [], []
 
     for epoch in tqdm(range(EPOCHS)):
         model.train()
@@ -60,6 +66,8 @@ if __name__ == "__main__":
             
             loss.backward()
             optimizer.step()
+            if idx % 10 == 0: # I think there is got to be a better way fot tracking loss
+                train_loss.append(loss)
 
         train_loss = train_running_loss / (idx + 1)
 
@@ -80,9 +88,12 @@ if __name__ == "__main__":
 
             val_loss = val_running_loss / (idx + 1)
 
+            if idx % 10 == 0: # Here too
+                val_loss.append(loss)
         print("-"*80 + "\n")
         print(f"Train Loss EPOCH {epoch+1}: {train_loss:.4f}")
         print(f"Valid Loss EPOCH {epoch+1}: {val_loss:.4f}")
         print("-"*80 + "\n")
 
     torch.save(model.state_dict(), MODEL_SAVE_PATH)
+    # debugger.plot_loss_accuracy(train_losses, val_losses, None, None)

@@ -12,12 +12,15 @@ from dataset import OxfordIIITPetsFactory, TrimapClasses
 from utils.loss import IoUMetric
 from models.segnet import SegNet 
 from models.segnetdws import DWSSegNet
+from models.vggnet import  VGGNet
 
 def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_name):
     if model_name == "SegNet":
         model = SegNet(kernel_size=3).to(device)
     elif model_name == "DWSSegNet":
         model = DWSSegNet(kernel_size=3).to(device)
+    elif model_name == "VGGNet":
+        model = VGGNet().to(device)
     else:
         print(f"Wrong model name: {model_name}")
         return
@@ -64,7 +67,8 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_nam
             pixel_metric = pixel_metric.to(device)
             test_pixel_accuracy_running += pixel_metric(pred_labels, mask)
 
-            test_custom_iou_running += IoUMetric(pred, mask)
+            # test_custom_iou_running += IoUMetric(pred, mask)
+            test_custom_iou_running = 0 
         test_loss = test_running_loss / (idx + 1)
         pixel_accuracy = test_pixel_accuracy_running / (idx + 1)
         iou_accuracy = test_iou_accuracy_running / (idx + 1)
@@ -102,7 +106,7 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_nam
         plt.savefig(f"results/{model_name}.png")
 
 if __name__ == "__main__":
-    MODEL_NAME = "DWSSegNet"
+    MODEL_NAME = "VGGNet"
     MODEL_PATH = f"./saved_models/{MODEL_NAME}.pth"
     DATA_PATH = "../data/OxfordPets"
     BATCH_SIZE = 21

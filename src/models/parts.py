@@ -184,3 +184,56 @@ class DepthwiseSeparableTripleUnConv2d(nn.Module):
         x = self.maxunpool(x, indices, output_size=output_size)
         x = self.layer(x)
         return x
+
+
+class BlockConvTranspose2d(nn.Module):
+    def __init__(self, channels_in, channels_out, batch_size, kernel_size=3, stride=1,
+                 padding=0, dilation=1, bias=False):
+        super(BlockConvTranspose2d, self).__init__()
+        self.layer = nn.Sequential(
+            nn.ConvTranspose2d(channels_in, channels_out, kernel_size=kernel_size, stride=1,
+                      padding=kernel_size//2, dilation=dilation, bias=bias),
+            nn.BatchNorm2d(batch_size),
+            nn.ReLU()
+        )
+
+    def forward(self, x):
+        return self.layer(x)
+
+class DoubleUnConvTranspose2d(nn.Module):
+    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
+        super(DoubleUnConvTranspose2d, self).__init__()
+        self.layer = nn.Sequential(
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
+                        padding=kernel_size//2, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
+                        padding=kernel_size//2, dilation=dilation, bias=bias)
+        )
+
+        self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
+
+    def forward(self, x, indices, output_size):
+        x = self.maxunpool(x, indices, output_size=output_size)
+        x = self.layer(x)
+        return x
+        
+class TripleUnConvTranspose2d(nn.Module):
+
+    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
+        super(TripleUnConvTranspose2d, self).__init__()
+        self.layer = nn.Sequential(
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
+                        padding=kernel_size//2, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
+                        padding=kernel_size//2, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
+                        padding=kernel_size//2, dilation=dilation, bias=bias)
+        )
+
+        self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
+
+    def forward(self, x, indices, output_size):
+        x = self.maxunpool(x, indices, output_size=output_size)
+        x = self.layer(x)
+        return x
+
