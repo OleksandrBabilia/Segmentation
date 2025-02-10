@@ -5,13 +5,13 @@ from models.parts import DoubleConv2d, DoubleUnConvTranspose2d, TripleConv2d, Tr
 
 
 class VGGNet(nn.Module):
-    def __init__(self):
+    def __init__(self, kernel_size):
         super(VGGNet, self).__init__()
-        self.conv1 = DoubleConv2d(3, 64) 
-        self.conv2 = DoubleConv2d(64, 128)
-        self.conv3 = TripleConv2d(128, 256) 
-        self.conv4 = TripleConv2d(256, 512) 
-        self.conv5 = TripleConv2d(512, 512) 
+        self.conv1 = DoubleConv2d(3, 64, kernel_size=kernel_size) 
+        self.conv2 = DoubleConv2d(64, 128, kernel_size=kernel_size)
+        self.conv3 = TripleConv2d(128, 256, kernel_size=kernel_size) 
+        self.conv4 = TripleConv2d(256, 512, kernel_size=kernel_size) 
+        self.conv5 = TripleConv2d(512, 512, kernel_size=kernel_size) 
         
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
@@ -22,11 +22,11 @@ class VGGNet(nn.Module):
         self.fc2 = nn.Linear(4096, 4096)
         self.fc3 = nn.Linear(4096, 512 * 4 * 4)
         
-        self.unconv1 = TripleUnConvTranspose2d(512, 512)
-        self.unconv2 = TripleUnConvTranspose2d(512, 256)
-        self.unconv3 = TripleUnConvTranspose2d(256, 128)
-        self.unconv4 = DoubleUnConvTranspose2d(128, 64)
-        self.unconv5 = DoubleUnConvTranspose2d(64, 32)
+        self.unconv1 = TripleUnConvTranspose2d(512, 512, kernel_size=kernel_size)
+        self.unconv2 = TripleUnConvTranspose2d(512, 256, kernel_size=kernel_size)
+        self.unconv3 = TripleUnConvTranspose2d(256, 128, kernel_size=kernel_size)
+        self.unconv4 = DoubleUnConvTranspose2d(128, 64, kernel_size=kernel_size)
+        self.unconv5 = DoubleUnConvTranspose2d(64, 32, kernel_size=kernel_size)
         self.unconv6 = nn.Conv2d(32, 3, kernel_size=1)
 
         

@@ -2,6 +2,7 @@ import torch
 from torch import optim, nn
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
+import argparse
 
 from dataset import OxfordIIITPetsFactory
 from utils.plotbuilder import NeuralNetDebugger
@@ -9,24 +10,37 @@ from models.segnet import SegNet
 from models.segnetdws import DWSSegNet
 from models.vggnet import VGGNet 
 
+parser = argparse.ArgumentParser(
+                    prog='Segmentation Tester',
+                    description='App to efficiently test different nn image segmentation architectures',
+                    epilog='and may God help us')
+parser.add_argument('-m', '--model')     
+parser.add_argument('-s', '--save_name')     
+parser.add_argument('-t', '--transform', action=argparse.BooleanOptionalAction)
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     LEARNING_RATE = 1e-3
     SCHEDULAR_SZIE  = 7
     SCHEDULAR_GAMMA = 0.7
     BATCH_SIZE = 32 
     EPOCHS = 20
     DATA_PATH = "../data/OxfordPets"
-    MODEL_NAME = "VGGNet"
-    MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}.pth"
+    MODEL_NAME = args.model
+    MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}_{args.save_name}.pth"
 
     device = (
         "cuda" if torch.cuda.is_available() else
         "mps" if torch.backends.mps.is_available() else
         "cpu"
     )
+    model_mapping = {
+        "SegNet": SegNet,
+        "DWSSegNet": DWSSegNet,
+        "VGGNet": VGGNet
+    }
 
-    dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/train", "trainval")
+    dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/train", "trainval", transform=args.transform)
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(dataset=train_dataset,
                                 batch_size=BATCH_SIZE,
@@ -35,12 +49,8 @@ if __name__ == "__main__":
                                 batch_size=BATCH_SIZE,
                                 shuffle=True)
 
-    if MODEL_NAME == "SegNet":
-        model = SegNet(kernel_size=3).to(device)
-    elif MODEL_NAME == "DWSSegNet":
-        model = DWSSegNet(kernel_size=3).to(device)
-    elif MODEL_NAME == "VGGNet":
-        model = VGGNet().to(device)
+    if MODEL_NAME in model_mapping:
+        model = model_mapping[MODEL_NAME](kernel_size=3).to(device)
     else:
         print(f"Wrong model name: {MODEL_NAME}")
         exit(0)
@@ -67,7 +77,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             if idx % 10 == 0: # I think there is got to be a better way fot tracking loss
-                train_loss.append(loss)
+                train_losses.append(loss)
 
         train_loss = train_running_loss / (idx + 1)
 
@@ -89,7 +99,7 @@ if __name__ == "__main__":
             val_loss = val_running_loss / (idx + 1)
 
             if idx % 10 == 0: # Here too
-                val_loss.append(loss)
+                val_losses.append(loss)
         print("-"*80 + "\n")
         print(f"Train Loss EPOCH {epoch+1}: {train_loss:.4f}")
         print(f"Valid Loss EPOCH {epoch+1}: {val_loss:.4f}")

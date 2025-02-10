@@ -7,6 +7,7 @@ import torchmetrics
 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import argparse
 
 from dataset import OxfordIIITPetsFactory, TrimapClasses
 from utils.loss import IoUMetric
@@ -14,7 +15,15 @@ from models.segnet import SegNet
 from models.segnetdws import DWSSegNet
 from models.vggnet import  VGGNet
 
-def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_name):
+parser = argparse.ArgumentParser(
+                    prog='Segmentation Tester',
+                    description='App to efficiently test different nn image segmentation architectures',
+                    epilog='and may God help us')
+parser.add_argument('-m', '--model')     
+parser.add_argument('-s', '--save_name')     
+parser.add_argument('-t', '--transform', action=argparse.BooleanOptionalAction)
+
+def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_plot, device,  transform):
     if model_name == "SegNet":
         model = SegNet(kernel_size=3).to(device)
     elif model_name == "DWSSegNet":
@@ -28,7 +37,7 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_nam
     model.load_state_dict(torch.load(model_pth, map_location=torch.device(device)))
     model.eval()
     criterion = nn.CrossEntropyLoss(reduction='mean')
-    test_dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/test", "test") 
+    test_dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/test", "test", transform=transform) 
     test_dataloader = DataLoader(dataset=test_dataset,
                                 batch_size=batch_size,
                                 shuffle=True)
@@ -103,11 +112,14 @@ def print_test_dataset_masks(model_pth, batch_size, show_plot, device, model_nam
         while len(plt.get_fignums()) > 0:
             plt.close()
     else:
-        plt.savefig(f"results/{model_name}.png")
+        plt.savefig(f"results/{model_name}_{save_name}.png")
 
 if __name__ == "__main__":
-    MODEL_NAME = "VGGNet"
-    MODEL_PATH = f"./saved_models/{MODEL_NAME}.pth"
+    args = parser.parse_args()
+
+    SAVE_NAME = args.save_name
+    MODEL_NAME = args.model
+    MODEL_PATH = f"./saved_models/{MODEL_NAME}_{SAVE_NAME}.pth"
     DATA_PATH = "../data/OxfordPets"
     BATCH_SIZE = 21
     device = (
@@ -116,4 +128,4 @@ if __name__ == "__main__":
         "cpu"
     )
 
-    print_test_dataset_masks(MODEL_PATH, BATCH_SIZE, True, device, MODEL_NAME)
+    print_test_dataset_masks(MODEL_PATH, MODEL_NAME, SAVE_NAME, BATCH_SIZE, True, device, args.transform)

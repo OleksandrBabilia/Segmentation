@@ -55,17 +55,27 @@ class OxfordIIITPetsFactory:
         return cls.device
     
     @classmethod
-    def get_transforms(cls):
+    def get_transforms(cls, transform=False):
         device = cls.get_device()
+        if transform:
+            return transforms.Compose([
+                transforms.Lambda(lambda x: x.to(device)),
+                transforms.Resize((128, 128), interpolation=transforms.InterpolationMode.NEAREST),
+                transforms.RandomHorizontalFlip(p=0.5),
+            ])
         return transforms.Compose([
             transforms.Lambda(lambda x: x.to(device)),
             transforms.Resize((128, 128), interpolation=transforms.InterpolationMode.NEAREST),
-            transforms.RandomHorizontalFlip(p=0.5),
         ])
     
     @classmethod
-    def create(cls, root, split):
+    def create(cls, root, split, transform=False):
+        if transform:
+            return OxfordIIITPetsAugmented(root, split=split, target_types="segmentation", download=False,
+                                           pre_target_transform=transforms.ToTensor(), pre_transform=transforms.ToTensor(),
+                                           common_transform=cls.get_transforms(transform=transform), post_transform=transforms.ColorJitter(contrast=0.3),
+                                           post_target_transform=transforms.Lambda(lambda x: (255 * x).to(torch.long) -1))
         return OxfordIIITPetsAugmented(root, split=split, target_types="segmentation", download=False,
-                                       pre_target_transform=transforms.ToTensor(), pre_transform=transforms.ToTensor(),
-                                       common_transform=cls.get_transforms(), post_transform=transforms.ColorJitter(contrast=0.3),
-                                       post_target_transform=transforms.Lambda(lambda x: (255 * x).to(torch.long) -1))
+                                           pre_target_transform=transforms.ToTensor(), pre_transform=transforms.ToTensor(),
+                                           common_transform=cls.get_transforms(transform=transform),
+                                           post_target_transform=transforms.Lambda(lambda x: (255 * x).to(torch.long) -1))

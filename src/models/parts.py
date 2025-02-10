@@ -1,13 +1,13 @@
 from torch import nn
 
 class BlockConv2d(nn.Module):
-    def __init__(self, channels_in, channels_out, batch_size, kernel_size=3, stride=1,
+    def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False):
         super(BlockConv2d, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(channels_in, channels_out, kernel_size=kernel_size, stride=1,
-                      padding=kernel_size//2, dilation=dilation, bias=bias),
-            nn.BatchNorm2d(batch_size),
+            nn.Conv2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
+                      padding=padding, dilation=dilation, bias=bias),
+            nn.BatchNorm2d(batch_size) if batch_size else None ,
             nn.ReLU()
         )
 
@@ -19,10 +19,10 @@ class DoubleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DoubleConv2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True)
@@ -38,12 +38,12 @@ class TripleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(TripleConv2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True)
@@ -59,10 +59,10 @@ class DoubleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DoubleUnConv2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
@@ -76,12 +76,12 @@ class TripleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(TripleUnConv2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
@@ -97,7 +97,7 @@ class DepthwiseSeparableBlockConv2d(nn.Module):
                  padding=0, dilation=1, bias=False):
         super(DepthwiseSeparableBlockConv2d, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(channels_in, channels_in, kernel_size=kernel_size, stride=1,
+            nn.Conv2d(channels_in, channels_in, kernel_size=kernel_size, stride=stride,
                       padding=padding, dilation=dilation, bias=bias, groups=channels_in), # depthwise
             nn.Conv2d(channels_in, channels_out, kernel_size=1, bias=bias), # pointwise 
             nn.BatchNorm2d(batch_size),
@@ -112,10 +112,10 @@ class DepthwiseSeparableDoubleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DepthwiseSeparableDoubleConv2d, self).__init__()
         self.layer = nn.Sequential(
-            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True)
@@ -131,12 +131,12 @@ class DepthwiseSeparableTripleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DepthwiseSeparableTripleConv2d, self).__init__()
         self.layer = nn.Sequential(
-            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
         )
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True)
@@ -152,10 +152,10 @@ class DepthwiseSeparableDoubleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DepthwiseSeparableDoubleUnConv2d, self).__init__()
         self.layer = nn.Sequential(
-            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
@@ -170,12 +170,12 @@ class DepthwiseSeparableTripleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DepthwiseSeparableTripleUnConv2d, self).__init__()
         self.layer = nn.Sequential(
-            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
@@ -191,8 +191,8 @@ class BlockConvTranspose2d(nn.Module):
                  padding=0, dilation=1, bias=False):
         super(BlockConvTranspose2d, self).__init__()
         self.layer = nn.Sequential(
-            nn.ConvTranspose2d(channels_in, channels_out, kernel_size=kernel_size, stride=1,
-                      padding=kernel_size//2, dilation=dilation, bias=bias),
+            nn.ConvTranspose2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
+                      padding=padding, dilation=dilation, bias=bias),
             nn.BatchNorm2d(batch_size),
             nn.ReLU()
         )
@@ -204,10 +204,10 @@ class DoubleUnConvTranspose2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(DoubleUnConvTranspose2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)
@@ -222,12 +222,12 @@ class TripleUnConvTranspose2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
         super(TripleUnConvTranspose2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias),
-            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=1,
-                        padding=kernel_size//2, dilation=dilation, bias=bias)
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias),
+            BlockConvTranspose2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+                        padding=padding, dilation=dilation, bias=bias)
         )
 
         self.maxunpool = nn.MaxUnpool2d(kernel_size=2)

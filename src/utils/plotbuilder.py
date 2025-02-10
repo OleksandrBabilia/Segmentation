@@ -40,7 +40,8 @@ class NeuralNetDebugger:
                 fig = plt.figure()
                 sns.histplot(param.cpu().detach().numpy().flatte(), kde=True)
                 plt.title(f"Weight Distribution: {name}")
-                self.save_plot(fig, f"weight_{name.replace(".", "_")}")
+                clear_name = name.replace(".", "_")
+                self.save_plot(fig, f"weight_{clear_name}")
     
     def plot_grad_flow(self):
         ave_grads = []
