@@ -250,10 +250,13 @@ class TripleUnConvTranspose2d(nn.Module):
 
 
 class UnetUpDoubleConv2d(nn.Module):
-    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
+    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False, bilinear=False):
         super().__init__()
-        self.up = nn.ConvTranspose2d(channels_in, channels_in//2, kernel_size=2, stride=2)
-        self.conv = DoubleConv2d(channels_in, channels_out, kernel_size=kernel_size, padding=padding, batch=False, maxpool=False)
+        if bilinear:
+            self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
+        else:
+            self.up = nn.ConvTranspose2d(channels_in, channels_in//2, kernel_size=2, stride=2)
+        self.conv = DoubleConv2d(channels_in, channels_out, kernel_size=kernel_size, padding=padding, batch=True, maxpool=False)
 
     def forward(self, x1, x2):
         x1 = self.up(x1)

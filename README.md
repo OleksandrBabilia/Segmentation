@@ -47,3 +47,11 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
      - IoU: 0.697
   - **Note**:
   Linear verion of UNet. For some reason LR scheduler destroys grad on step 
+5. **UNet Bilinear** - [Paper](https://arxiv.org/abs/1505.04597)  
+   - **Size**: 13,386,179 parameters
+   - **Loss**: 0.3430
+   - **Accuracy**:  
+     - Pixel Accuracy: 0.8758
+     - IoU: 0.6923
+  - **Note**:
+  Used bilinear upsampaling instead of transposed convolutions. Managed to get ~57% decrease in size and ~2.7% decrease in loss.

@@ -10,6 +10,7 @@ from models.segnet import SegNet
 from models.segnetdws import DWSSegNet
 from models.vggnet import VGGNet 
 from models.unet import UNet 
+from models.unet_bilinear import UNetBilinear 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -40,6 +41,7 @@ if __name__ == "__main__":
         "DWSSegNet": DWSSegNet,
         "VGGNet": VGGNet,
         "UNet": UNet,
+        "UNetBilinear": UNetBilinear
     }
 
     dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/train", "trainval", transform=args.transform)
@@ -79,7 +81,7 @@ if __name__ == "__main__":
             
             loss.backward()
             optimizer.step()
-            if idx % 10 == 0: # I think there is got to be a better way fot tracking loss
+            if idx % 10 == 0: # I think there is got to be a better way for tracking loss
                 train_losses.append(loss)
 
         train_loss = train_running_loss / (idx + 1)

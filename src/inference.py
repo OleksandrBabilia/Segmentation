@@ -15,6 +15,7 @@ from models.segnet import SegNet
 from models.segnetdws import DWSSegNet
 from models.vggnet import  VGGNet
 from models.unet import UNet 
+from models.unet_bilinear import UNetBilinear 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -29,6 +30,7 @@ model_mapping = {
     "DWSSegNet": DWSSegNet,
     "VGGNet": VGGNet,
     "UNet": UNet,
+    "UNetBilinear": UNetBilinear
 }
 
 def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_plot, device,  transform):
