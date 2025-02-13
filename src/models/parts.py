@@ -1,4 +1,6 @@
+import torch
 from torch import nn
+import torch.nn.functional as F
 
 class BlockConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
@@ -6,29 +8,35 @@ class BlockConv2d(nn.Module):
         super(BlockConv2d, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
-                      padding=padding, dilation=dilation, bias=bias),
-            nn.BatchNorm2d(batch_size) if batch_size else None ,
-            nn.ReLU()
+                        padding=padding, dilation=dilation, bias=bias),
         )
+        if batch_size:
+            self.layer.add_module(name="BatchNorm2d", module=nn.BatchNorm2d(batch_size))
+        self.layer.add_module(name="ReLU", module=nn.ReLU())
 
     def forward(self, x):
         return self.layer(x)
 
 
 class DoubleConv2d(nn.Module):
-    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
+    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False, batch=True,
+                maxpool=True, maxpool_stride=None):
         super(DoubleConv2d, self).__init__()
         self.layer = nn.Sequential(
-            BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+            BlockConv2d(channels_in, channels_out, batch_size=channels_out if batch else None, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
-            BlockConv2d(channels_out, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
+            BlockConv2d(channels_out, channels_out, batch_size=channels_out if batch else None, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias)
         )
 
-        self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=2, return_indices=True, stride=maxpool_stride) if maxpool else None
+        
 
     def forward(self, x):
         x = self.layer(x)
+        if not self.maxpool:
+            return x
+
         shape = x.shape
         x, indices = self.maxpool(x)
         return x, indices, shape
@@ -187,18 +195,20 @@ class DepthwiseSeparableTripleUnConv2d(nn.Module):
 
 
 class BlockConvTranspose2d(nn.Module):
-    def __init__(self, channels_in, channels_out, batch_size, kernel_size=3, stride=1,
+    def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False):
         super(BlockConvTranspose2d, self).__init__()
         self.layer = nn.Sequential(
             nn.ConvTranspose2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
                       padding=padding, dilation=dilation, bias=bias),
-            nn.BatchNorm2d(batch_size),
-            nn.ReLU()
         )
+        if batch_size:
+            self.layer.add_module(nn.BatchNorm2d(batch_size))
+        self.layer.add_module(nn.ReLU())
 
     def forward(self, x):
         return self.layer(x)
+
 
 class DoubleUnConvTranspose2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
@@ -217,6 +227,7 @@ class DoubleUnConvTranspose2d(nn.Module):
         x = self.layer(x)
         return x
         
+
 class TripleUnConvTranspose2d(nn.Module):
 
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
@@ -237,3 +248,19 @@ class TripleUnConvTranspose2d(nn.Module):
         x = self.layer(x)
         return x
 
+
+class UnetUpDoubleConv2d(nn.Module):
+    def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
+        super().__init__()
+        self.up = nn.ConvTranspose2d(channels_in, channels_in//2, kernel_size=2, stride=2)
+        self.conv = DoubleConv2d(channels_in, channels_out, kernel_size=kernel_size, padding=padding, batch=False, maxpool=False)
+
+    def forward(self, x1, x2):
+        x1 = self.up(x1)
+
+        diffY = x2.size()[2] - x1.size()[2]
+        diffX = x2.size()[3] - x1.size()[3]
+
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
+        x = torch.cat([x2, x1], dim=1)
+        return self.conv(x)

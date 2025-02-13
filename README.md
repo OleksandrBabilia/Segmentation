@@ -21,7 +21,6 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
    - **Accuracy**:  
      - Pixel Accuracy: 0.8277  
      - IoU: 0.6460  
-     - Custom IoU: 1.6417  
    - **Note**:
    The model I decided to start with is very simple but beautiful.
 2. **SegNet with Depthwise Separable Convolutions** - [Paper](https://arxiv.org/abs/1704.04861)  
@@ -30,7 +29,6 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
    - **Accuracy**:  
      - Pixel Accuracy: 0.7960
      - IoU: 0.6883
-     - Custom IoU: 1.4965 
   - **Note**:
   After modifying SegNet to use Depthwise Separable Convolutions, I was able to reduce the size by ~88%, with a 4% increase in loss
 3. **VGG for Segmentation** - [Paper](https://arxiv.org/abs/1409.1556v6)  
@@ -40,4 +38,12 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
      - Pixel Accuracy: 0.7327
      - IoU: 0.5505
   - **Note**:
-  I really think I've messed up here somewhere, because VGG should be better, but I don't error now. Will return to VGG.
+  I really think I've messed up here somewhere, because VGG should be better, but I don't see an error now. Will return to VGG.
+4. **UNet** - [Paper](https://arxiv.org/abs/1505.04597)  
+   - **Size**: 31,026,563 parameters
+   - **Loss**: 0.3523
+   - **Accuracy**:  
+     - Pixel Accuracy: 0.8686
+     - IoU: 0.697
+  - **Note**:
+  Linear verion of UNet. For some reason LR scheduler destroys grad on step 

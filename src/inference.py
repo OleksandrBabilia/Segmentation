@@ -14,6 +14,7 @@ from utils.loss import IoUMetric
 from models.segnet import SegNet 
 from models.segnetdws import DWSSegNet
 from models.vggnet import  VGGNet
+from models.unet import UNet 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -23,16 +24,19 @@ parser.add_argument('-m', '--model')
 parser.add_argument('-s', '--save_name')     
 parser.add_argument('-t', '--transform', action=argparse.BooleanOptionalAction)
 
+model_mapping = {
+    "SegNet": SegNet,
+    "DWSSegNet": DWSSegNet,
+    "VGGNet": VGGNet,
+    "UNet": UNet,
+}
+
 def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_plot, device,  transform):
-    if model_name == "SegNet":
-        model = SegNet(kernel_size=3).to(device)
-    elif model_name == "DWSSegNet":
-        model = DWSSegNet(kernel_size=3).to(device)
-    elif model_name == "VGGNet":
-        model = VGGNet().to(device)
+    if model_name in model_mapping:
+        model = model_mapping[MODEL_NAME](kernel_size=3).to(device)
     else:
-        print(f"Wrong model name: {model_name}")
-        return
+        print(f"Wrong model name: {MODEL_NAME}")
+        exit(0)
         
     model.load_state_dict(torch.load(model_pth, map_location=torch.device(device)))
     model.eval()
@@ -76,8 +80,8 @@ def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_
             pixel_metric = pixel_metric.to(device)
             test_pixel_accuracy_running += pixel_metric(pred_labels, mask)
 
-            # test_custom_iou_running += IoUMetric(pred, mask)
-            test_custom_iou_running = 0 
+            test_custom_iou_running += IoUMetric(pred, mask)
+            # test_custom_iou_running = 0 
         test_loss = test_running_loss / (idx + 1)
         pixel_accuracy = test_pixel_accuracy_running / (idx + 1)
         iou_accuracy = test_iou_accuracy_running / (idx + 1)

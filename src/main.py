@@ -9,6 +9,7 @@ from utils.plotbuilder import NeuralNetDebugger
 from models.segnet import SegNet 
 from models.segnetdws import DWSSegNet
 from models.vggnet import VGGNet 
+from models.unet import UNet 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -37,7 +38,8 @@ if __name__ == "__main__":
     model_mapping = {
         "SegNet": SegNet,
         "DWSSegNet": DWSSegNet,
-        "VGGNet": VGGNet
+        "VGGNet": VGGNet,
+        "UNet": UNet,
     }
 
     dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/train", "trainval", transform=args.transform)
@@ -56,7 +58,8 @@ if __name__ == "__main__":
         exit(0)
 
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    schedular = optim.lr_scheduler.StepLR(optimizer, step_size=SCHEDULAR_SZIE, gamma=SCHEDULAR_SZIE)
+    # schedular = optim.lr_scheduler.StepLR(optimizer, step_size=SCHEDULAR_SZIE, gamma=SCHEDULAR_SZIE)
+    schedular = None
     criterion = nn.CrossEntropyLoss(reduction='mean')
     debugger = NeuralNetDebugger(model)
     train_losses, val_losses = [], []
