@@ -55,3 +55,11 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
      - IoU: 0.6923
   - **Note**:
   Used bilinear upsampaling instead of transposed convolutions. Managed to get ~57% decrease in size and ~2.7% decrease in loss.
+6. **Fully Connected**
+   - **Size**: 109,241,728 parameters
+   - **Loss**: 0.7215
+   - **Accuracy**:  
+     - Pixel Accuracy: 0.7175
+     - IoU: 0.4133
+  - **Note**:
+  Tried justed for fun. Number of parameters is insane, but bearly learns anything

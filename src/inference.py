@@ -16,6 +16,7 @@ from models.segnetdws import DWSSegNet
 from models.vggnet import  VGGNet
 from models.unet import UNet 
 from models.unet_bilinear import UNetBilinear 
+from models.fullyconnectednet import FullConnectedNet 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -30,7 +31,8 @@ model_mapping = {
     "DWSSegNet": DWSSegNet,
     "VGGNet": VGGNet,
     "UNet": UNet,
-    "UNetBilinear": UNetBilinear
+    "UNetBilinear": UNetBilinear,
+    "FullyConnectedNet": FullConnectedNet,
 }
 
 def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_plot, device,  transform):
@@ -118,14 +120,14 @@ def print_test_dataset_masks(model_pth, model_name, save_name, batch_size, show_
         while len(plt.get_fignums()) > 0:
             plt.close()
     else:
-        plt.savefig(f"results/{model_name}_{save_name}.png")
+        plt.savefig(f"results/{model_name}{('_' + save_name) if save_name else None}.png")
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
     SAVE_NAME = args.save_name
     MODEL_NAME = args.model
-    MODEL_PATH = f"./saved_models/{MODEL_NAME}_{SAVE_NAME}.pth"
+    MODEL_PATH = f"./saved_models/{MODEL_NAME}{('_' + args.save_name) if args.save_name else None}.pth"
     DATA_PATH = "../data/OxfordPets"
     BATCH_SIZE = 21
     device = (

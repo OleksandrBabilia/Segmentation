@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class BlockConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
-                 padding=0, dilation=1, bias=False):
+                 padding=0, dilation=1, bias=False, dropout=False):
         super(BlockConv2d, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
@@ -13,6 +13,8 @@ class BlockConv2d(nn.Module):
         if batch_size:
             self.layer.add_module(name="BatchNorm2d", module=nn.BatchNorm2d(batch_size))
         self.layer.add_module(name="ReLU", module=nn.ReLU())
+        if dropout:
+            self.layer.add_module(name="DropOut", module=nn.Dropout()) 
 
     def forward(self, x):
         return self.layer(x)

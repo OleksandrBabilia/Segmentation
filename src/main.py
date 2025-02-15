@@ -11,6 +11,7 @@ from models.segnetdws import DWSSegNet
 from models.vggnet import VGGNet 
 from models.unet import UNet 
 from models.unet_bilinear import UNetBilinear 
+from models.fullyconnectednet import FullConnectedNet 
 
 parser = argparse.ArgumentParser(
                     prog='Segmentation Tester',
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     EPOCHS = 20
     DATA_PATH = "../data/OxfordPets"
     MODEL_NAME = args.model
-    MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}_{args.save_name}.pth"
+    MODEL_SAVE_PATH = f"./saved_models/{MODEL_NAME}{('_' + args.save_name) if args.save_name else None}.pth"
 
     device = (
         "cuda" if torch.cuda.is_available() else
@@ -41,7 +42,8 @@ if __name__ == "__main__":
         "DWSSegNet": DWSSegNet,
         "VGGNet": VGGNet,
         "UNet": UNet,
-        "UNetBilinear": UNetBilinear
+        "UNetBilinear": UNetBilinear,
+        "FullyConnectedNet": FullConnectedNet,
     }
 
     dataset = OxfordIIITPetsFactory.create(DATA_PATH+"/train", "trainval", transform=args.transform)
