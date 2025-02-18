@@ -63,3 +63,5 @@ The models were trained on an **Nvidia GeForce RTX 3080 Max-Q** with **8 GB GDDR
      - IoU: 0.4133
   - **Note**:
   Tried justed for fun. Number of parameters is insane, but bearly learns anything
+
+  Kinda getting tired of segmentation, temporary moving to llms(karpathy the goat)
