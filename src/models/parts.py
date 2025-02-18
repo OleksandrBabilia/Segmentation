@@ -2,17 +2,18 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 class BlockConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False, dropout=False):
-        super(BlockConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
         )
         if batch_size:
             self.layer.add_module(name="BatchNorm2d", module=nn.BatchNorm2d(batch_size))
-        self.layer.add_module(name="ReLU", module=nn.ReLU())
+        self.layer.add_module(name="ReLU", module=nn.ReLU(inplace=True))
         if dropout:
             self.layer.add_module(name="DropOut", module=nn.Dropout()) 
 
@@ -23,7 +24,7 @@ class BlockConv2d(nn.Module):
 class DoubleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False, batch=True,
                 maxpool=True, maxpool_stride=None):
-        super(DoubleConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConv2d(channels_in, channels_out, batch_size=channels_out if batch else None, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -46,7 +47,7 @@ class DoubleConv2d(nn.Module):
 
 class TripleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(TripleConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -67,7 +68,7 @@ class TripleConv2d(nn.Module):
 
 class DoubleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DoubleUnConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -84,7 +85,7 @@ class DoubleUnConv2d(nn.Module):
         
 class TripleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(TripleUnConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -105,13 +106,13 @@ class TripleUnConv2d(nn.Module):
 class DepthwiseSeparableBlockConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False):
-        super(DepthwiseSeparableBlockConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(channels_in, channels_in, kernel_size=kernel_size, stride=stride,
                       padding=padding, dilation=dilation, bias=bias, groups=channels_in), # depthwise
             nn.Conv2d(channels_in, channels_out, kernel_size=1, bias=bias), # pointwise 
             nn.BatchNorm2d(batch_size),
-            nn.ReLU()
+            nn.ReLU(inplace=True)
         )
 
     def forward(self, x):
@@ -120,7 +121,7 @@ class DepthwiseSeparableBlockConv2d(nn.Module):
 
 class DepthwiseSeparableDoubleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DepthwiseSeparableDoubleConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -139,7 +140,7 @@ class DepthwiseSeparableDoubleConv2d(nn.Module):
     
 class DepthwiseSeparableTripleConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DepthwiseSeparableTripleConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             DepthwiseSeparableBlockConv2d(channels_in, channels_out, batch_size=channels_out, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -160,7 +161,7 @@ class DepthwiseSeparableTripleConv2d(nn.Module):
 
 class DepthwiseSeparableDoubleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DepthwiseSeparableDoubleUnConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -178,7 +179,7 @@ class DepthwiseSeparableDoubleUnConv2d(nn.Module):
 
 class DepthwiseSeparableTripleUnConv2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DepthwiseSeparableTripleUnConv2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             DepthwiseSeparableBlockConv2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -199,14 +200,14 @@ class DepthwiseSeparableTripleUnConv2d(nn.Module):
 class BlockConvTranspose2d(nn.Module):
     def __init__(self, channels_in, channels_out, batch_size=None, kernel_size=3, stride=1,
                  padding=0, dilation=1, bias=False):
-        super(BlockConvTranspose2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             nn.ConvTranspose2d(channels_in, channels_out, kernel_size=kernel_size, stride=stride,
                       padding=padding, dilation=dilation, bias=bias),
         )
         if batch_size:
             self.layer.add_module(nn.BatchNorm2d(batch_size))
-        self.layer.add_module(nn.ReLU())
+        self.layer.add_module(nn.ReLU(inplace=True))
 
     def forward(self, x):
         return self.layer(x)
@@ -214,7 +215,7 @@ class BlockConvTranspose2d(nn.Module):
 
 class DoubleUnConvTranspose2d(nn.Module):
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(DoubleUnConvTranspose2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
@@ -231,9 +232,8 @@ class DoubleUnConvTranspose2d(nn.Module):
         
 
 class TripleUnConvTranspose2d(nn.Module):
-
     def __init__(self, channels_in, channels_out, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
-        super(TripleUnConvTranspose2d, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             BlockConvTranspose2d(channels_in, channels_in, batch_size=channels_in, kernel_size=kernel_size, stride=stride,
                         padding=padding, dilation=dilation, bias=bias),
